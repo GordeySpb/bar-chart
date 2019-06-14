@@ -128,74 +128,64 @@ var margin = {
 };
 var graphWidth = 600 - margin.left - margin.right;
 var graphHeight = 600 - margin.top - margin.bottom;
-var data = [{
-  "name": "veg soup",
-  "orders": 200
-}, {
-  "name": "veg curry",
-  "orders": 600
-}, {
-  "name": "veg pasta",
-  "orders": 300
-}, {
-  "name": "veg burger",
-  "orders": 1400
-}, {
-  "name": "veg surprise",
-  "orders": 900
-}];
-var graph = svg.append('g').attr('width', graphWidth).attr('height', graphHeight).attr('transform', "translate(".concat(margin.left, ", ").concat(margin.top, ")"));
-var xAxisGroup = graph.append('g').attr('transform', "translate(0, ".concat(graphHeight, ")"));
-var yAxisGroup = graph.append('g');
-var y = d3.scaleLinear().domain([0, d3.max(data, function (_ref) {
-  var orders = _ref.orders;
-  return orders;
-})]).range([graphHeight, 0]); //get min value for orders
+db.collection('dishes').get().then(function (_ref) {
+  var docs = _ref.docs;
+  var data = docs.map(function (doc) {
+    return doc.data();
+  });
+  var graph = svg.append('g').attr('width', graphWidth).attr('height', graphHeight).attr('transform', "translate(".concat(margin.left, ", ").concat(margin.top, ")"));
+  var xAxisGroup = graph.append('g').attr('transform', "translate(0, ".concat(graphHeight, ")"));
+  var yAxisGroup = graph.append('g');
+  var y = d3.scaleLinear().domain([0, d3.max(data, function (_ref2) {
+    var orders = _ref2.orders;
+    return orders;
+  })]).range([graphHeight, 0]); //get min value for orders
 
-var min = d3.min(data, function (_ref2) {
-  var orders = _ref2.orders;
-  return orders;
-}); ////get max value for orders
+  var min = d3.min(data, function (_ref3) {
+    var orders = _ref3.orders;
+    return orders;
+  }); ////get max value for orders
 
-var max = d3.max(data, function (_ref3) {
-  var orders = _ref3.orders;
-  return orders;
-}); //get array with max and min value for orders
+  var max = d3.max(data, function (_ref4) {
+    var orders = _ref4.orders;
+    return orders;
+  }); //get array with max and min value for orders
 
-var extent = d3.extent(data, function (_ref4) {
-  var orders = _ref4.orders;
-  return orders;
+  var extent = d3.extent(data, function (_ref5) {
+    var orders = _ref5.orders;
+    return orders;
+  });
+  var x = d3.scaleBand().domain(data.map(function (item) {
+    return item.name;
+  })).range([0, 500]).paddingInner(0.2).paddingOuter(0.2); // join the data to rects
+
+  var rects = graph.selectAll('rect').data(data);
+  rects.attr('width', x.bandwidth).attr('height', function (_ref6) {
+    var orders = _ref6.orders;
+    return graphHeight - y(orders);
+  }).attr('fill', 'orange').attr('x', function (d) {
+    return x(d.name);
+  }).attr('y', function (d) {
+    return y(d.orders);
+  }); // append the enter selection to the DOM
+
+  rects.enter().append('rect').attr('width', x.bandwidth).attr('height', function (_ref7) {
+    var orders = _ref7.orders;
+    return graphHeight - y(orders);
+  }).attr('fill', 'orange').attr('x', function (d) {
+    return x(d.name);
+  }).attr('y', function (d) {
+    return y(d.orders);
+  }); //create and call the axes
+
+  var xAxis = d3.axisBottom(x);
+  var yAxis = d3.axisLeft(y).ticks(3).tickFormat(function (d) {
+    return d + ' orders';
+  });
+  xAxisGroup.call(xAxis);
+  yAxisGroup.call(yAxis);
+  xAxisGroup.selectAll('text').attr('transform', 'rotate(-40)').attr('text-anchor', 'end').attr('fill', 'orange');
 });
-var x = d3.scaleBand().domain(data.map(function (item) {
-  return item.name;
-})).range([0, 500]).paddingInner(0.2).paddingOuter(0.2); // join the data to rects
-
-var rects = graph.selectAll('rect').data(data);
-rects.attr('width', x.bandwidth).attr('height', function (_ref5) {
-  var orders = _ref5.orders;
-  return graphHeight - y(orders);
-}).attr('fill', 'orange').attr('x', function (d) {
-  return x(d.name);
-}).attr('y', function (d) {
-  return y(d.orders);
-}); // append the enter selection to the DOM
-
-rects.enter().append('rect').attr('width', x.bandwidth).attr('height', function (_ref6) {
-  var orders = _ref6.orders;
-  return graphHeight - y(orders);
-}).attr('fill', 'orange').attr('x', function (d) {
-  return x(d.name);
-}).attr('y', function (d) {
-  return y(d.orders);
-}); //create and call the axes
-
-var xAxis = d3.axisBottom(x);
-var yAxis = d3.axisLeft(y).ticks(3).tickFormat(function (d) {
-  return d + ' orders';
-});
-xAxisGroup.call(xAxis);
-yAxisGroup.call(yAxis);
-xAxisGroup.selectAll('text').attr('transform', 'rotate(-40)').attr('text-anchor', 'end').attr('fill', 'orange');
 },{}],"../../AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';

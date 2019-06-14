@@ -14,65 +14,42 @@ const margin = {
 const graphWidth = 600 - margin.left - margin.right;
 const graphHeight = 600 - margin.top - margin.bottom;
 
-const data = [
-  {
-    "name": "veg soup",
-    "orders": 200
-  },
+db.collection('dishes').get().then(({ docs }) => {
+  const data = docs.map(doc => doc.data());
 
-  {
-    "name": "veg curry",
-    "orders": 600
-  },
 
-  {
-    "name": "veg pasta",
-    "orders": 300
-  },
+  const graph = svg.append('g')
+    .attr('width', graphWidth)
+    .attr('height', graphHeight)
+    .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
-  {
-    "name": "veg burger",
-    "orders": 1400
-  },
-
-  {
-    "name": "veg surprise",
-    "orders": 900
-  }
-]
-
-const graph = svg.append('g')
-  .attr('width', graphWidth)
-  .attr('height', graphHeight)
-  .attr('transform', `translate(${margin.left}, ${margin.top})`);
-
-const xAxisGroup = graph.append('g')
-  .attr('transform', `translate(0, ${graphHeight})`);
-const yAxisGroup = graph.append('g');
+  const xAxisGroup = graph.append('g')
+    .attr('transform', `translate(0, ${graphHeight})`);
+  const yAxisGroup = graph.append('g');
 
 
 
 
-const y = d3.scaleLinear()
-  .domain([0, d3.max(data, ({orders}) => orders)])
-  .range([graphHeight, 0]);
+  const y = d3.scaleLinear()
+    .domain([0, d3.max(data, ({orders}) => orders)])
+    .range([graphHeight, 0]);
 
 
-//get min value for orders
-const min = d3.min(data, ({orders}) => orders);
-////get max value for orders
-const max = d3.max(data, ({orders}) => orders);
+  //get min value for orders
+  const min = d3.min(data, ({orders}) => orders);
+  ////get max value for orders
+  const max = d3.max(data, ({orders}) => orders);
 
-//get array with max and min value for orders
-const extent = d3.extent(data, ({orders}) => orders);
+  //get array with max and min value for orders
+  const extent = d3.extent(data, ({orders}) => orders);
 
 
 
-const x = d3.scaleBand()
-  .domain(data.map(item => item.name))
-  .range([0, 500])
-  .paddingInner(0.2)
-  .paddingOuter(0.2);
+  const x = d3.scaleBand()
+    .domain(data.map(item => item.name))
+    .range([0, 500])
+    .paddingInner(0.2)
+    .paddingOuter(0.2);
 
 
   // join the data to rects
@@ -109,4 +86,4 @@ const x = d3.scaleBand()
     .attr('text-anchor', 'end')
     .attr('fill', 'orange')
   
-
+});

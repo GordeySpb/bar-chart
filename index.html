@@ -10,6 +10,34 @@
 <body>
   <div class="canvas"></div>
 
+
+
+
+
+
+
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+  <script src="https://www.gstatic.com/firebasejs/6.2.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/6.2.0/firebase-firestore.js"></script>
+
+  <!-- TODO: Add SDKs for Firebase products that you want to use
+      https://firebase.google.com/docs/web/setup#config-web-app -->
+
+  <script>
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyA8ZYfVNJkUU_lVs4b9WW_vQ721gYPzfMI",
+      authDomain: "udemy-d3-firebase-3e61a.firebaseapp.com",
+      databaseURL: "https://udemy-d3-firebase-3e61a.firebaseio.com",
+      projectId: "udemy-d3-firebase-3e61a",
+      storageBucket: "udemy-d3-firebase-3e61a.appspot.com",
+      messagingSenderId: "513388634513",
+      appId: "1:513388634513:web:6e94f88a16596dce"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
   <script src="./index.js"></script>
 </body>
 </html>
