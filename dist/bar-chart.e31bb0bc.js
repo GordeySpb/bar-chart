@@ -118,7 +118,8 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 
   return newRequire;
 })({"index.js":[function(require,module,exports) {
-var svg = d3.select('.canvas').append('svg').attr('width', 600).attr('height', 600); //create margins and dimensions
+// select the svg container first
+var svg = d3.select('.canvas').append('svg').attr('width', 600).attr('height', 600); // create margins & dimensions
 
 var margin = {
   top: 20,
@@ -128,63 +129,60 @@ var margin = {
 };
 var graphWidth = 600 - margin.left - margin.right;
 var graphHeight = 600 - margin.top - margin.bottom;
-db.collection('dishes').get().then(function (_ref) {
-  var docs = _ref.docs;
-  var data = docs.map(function (doc) {
-    return doc.data();
-  });
-  var graph = svg.append('g').attr('width', graphWidth).attr('height', graphHeight).attr('transform', "translate(".concat(margin.left, ", ").concat(margin.top, ")"));
-  var xAxisGroup = graph.append('g').attr('transform', "translate(0, ".concat(graphHeight, ")"));
-  var yAxisGroup = graph.append('g');
-  var y = d3.scaleLinear().domain([0, d3.max(data, function (_ref2) {
-    var orders = _ref2.orders;
-    return orders;
-  })]).range([graphHeight, 0]); //get min value for orders
+var graph = svg.append('g').attr('width', graphWidth).attr('height', graphHeight).attr('transform', "translate(".concat(margin.left, ", ").concat(margin.top, ")")); // create axes groups
 
-  var min = d3.min(data, function (_ref3) {
-    var orders = _ref3.orders;
-    return orders;
-  }); ////get max value for orders
+var xAxisGroup = graph.append('g').attr('transform', "translate(0, ".concat(graphHeight, ")"));
+xAxisGroup.selectAll('text').attr('fill', 'orange').attr('transform', 'rotate(-40)').attr('text-anchor', 'end');
+var yAxisGroup = graph.append('g');
+var y = d3.scaleLinear().range([graphHeight, 0]);
+var x = d3.scaleBand().range([0, graphWidth]).paddingInner(0.2).paddingOuter(0.2); // create & call axes
 
-  var max = d3.max(data, function (_ref4) {
-    var orders = _ref4.orders;
-    return orders;
-  }); //get array with max and min value for orders
+var xAxis = d3.axisBottom(x);
+var yAxis = d3.axisLeft(y).ticks(3).tickFormat(function (d) {
+  return d + ' orders';
+}); // the update function
 
-  var extent = d3.extent(data, function (_ref5) {
-    var orders = _ref5.orders;
-    return orders;
-  });
-  var x = d3.scaleBand().domain(data.map(function (item) {
+var update = function update(data) {
+  // join the data to circs
+  var rects = graph.selectAll('rect').data(data); // remove unwanted rects
+
+  rects.exit().remove(); // update the domains
+
+  y.domain([0, d3.max(data, function (d) {
+    return d.orders;
+  })]);
+  x.domain(data.map(function (item) {
     return item.name;
-  })).range([0, 500]).paddingInner(0.2).paddingOuter(0.2); // join the data to rects
+  })); // add attrs to rects already in the DOM
 
-  var rects = graph.selectAll('rect').data(data);
-  rects.attr('width', x.bandwidth).attr('height', function (_ref6) {
-    var orders = _ref6.orders;
-    return graphHeight - y(orders);
+  rects.attr('width', x.bandwidth).attr("height", function (d) {
+    return graphHeight - y(d.orders);
   }).attr('fill', 'orange').attr('x', function (d) {
     return x(d.name);
   }).attr('y', function (d) {
     return y(d.orders);
   }); // append the enter selection to the DOM
 
-  rects.enter().append('rect').attr('width', x.bandwidth).attr('height', function (_ref7) {
-    var orders = _ref7.orders;
-    return graphHeight - y(orders);
+  rects.enter().append('rect').attr('width', x.bandwidth).attr("height", function (d) {
+    return graphHeight - y(d.orders);
   }).attr('fill', 'orange').attr('x', function (d) {
     return x(d.name);
   }).attr('y', function (d) {
     return y(d.orders);
-  }); //create and call the axes
-
-  var xAxis = d3.axisBottom(x);
-  var yAxis = d3.axisLeft(y).ticks(3).tickFormat(function (d) {
-    return d + ' orders';
   });
   xAxisGroup.call(xAxis);
   yAxisGroup.call(yAxis);
-  xAxisGroup.selectAll('text').attr('transform', 'rotate(-40)').attr('text-anchor', 'end').attr('fill', 'orange');
+};
+
+db.collection('dishes').get().then(function (_ref) {
+  var docs = _ref.docs;
+  var data = docs.map(function (doc) {
+    return doc.data();
+  });
+  update(data);
+  d3.interval(function () {
+    data.pop(); // update(data);
+  }, 3000);
 });
 },{}],"../../AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
@@ -214,7 +212,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "62149" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49218" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
