@@ -118,6 +118,10 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 
   return newRequire;
 })({"index.js":[function(require,module,exports) {
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 // select the svg container first
 var svg = d3.select('.canvas').append('svg').attr('width', 600).attr('height', 600); // create margins & dimensions
 
@@ -140,7 +144,9 @@ var x = d3.scaleBand().range([0, graphWidth]).paddingInner(0.2).paddingOuter(0.2
 var xAxis = d3.axisBottom(x);
 var yAxis = d3.axisLeft(y).ticks(3).tickFormat(function (d) {
   return d + ' orders';
-}); // the update function
+}); // animation
+
+var t = d3.transition().duration(3000); // the update function
 
 var update = function update(data) {
   // join the data to circs
@@ -155,35 +161,66 @@ var update = function update(data) {
     return item.name;
   })); // add attrs to rects already in the DOM
 
-  rects.attr('width', x.bandwidth).attr("height", function (d) {
-    return graphHeight - y(d.orders);
-  }).attr('fill', 'orange').attr('x', function (d) {
+  rects.attr('width', x.bandwidth).attr('fill', 'orange').attr('x', function (d) {
     return x(d.name);
-  }).attr('y', function (d) {
-    return y(d.orders);
-  }); // append the enter selection to the DOM
+  }); //this is apply after merge(rects)
+  // .transition(t)
+  //   .attr("height", d => graphHeight - y(d.orders))
+  //   .attr('y', d => y(d.orders));
+  // append the enter selection to the DOM
 
-  rects.enter().append('rect').attr('width', x.bandwidth).attr("height", function (d) {
-    return graphHeight - y(d.orders);
-  }).attr('fill', 'orange').attr('x', function (d) {
+  rects.enter().append('rect').attr('width', 0).attr('height', 0).attr('fill', 'orange').attr('x', function (d) {
     return x(d.name);
-  }).attr('y', function (d) {
+  }).attr('y', graphHeight).merge(rects).transition(t).attrTween('width', widthTween).attr('y', function (d) {
     return y(d.orders);
+  }).attr('height', function (d) {
+    return graphHeight - y(d.orders);
   });
   xAxisGroup.call(xAxis);
   yAxisGroup.call(yAxis);
 };
 
-db.collection('dishes').get().then(function (_ref) {
-  var docs = _ref.docs;
-  var data = docs.map(function (doc) {
-    return doc.data();
+var data = [];
+db.collection('dishes').onSnapshot(function (res) {
+  res.docChanges().forEach(function (change) {
+    var doc = _objectSpread({}, change.doc.data(), {
+      id: change.doc.id
+    });
+
+    switch (change.type) {
+      case 'added':
+        data.push(doc);
+        break;
+
+      case 'modified':
+        var index = data.findIndex(function (item) {
+          return item.id == doc.id;
+        });
+        data[index] = doc;
+        break;
+
+      case 'removed':
+        data = data.filter(function (item) {
+          return item.id !== doc.id;
+        });
+        break;
+
+      default:
+        break;
+    }
   });
   update(data);
-  d3.interval(function () {
-    data.pop(); // update(data);
-  }, 3000);
-});
+}); // TWEENS
+
+var widthTween = function widthTween(d) {
+  console.log(d); //define interpolation
+  //returns finction call i
+
+  var i = d3.interpolate(0, x.bandwidth());
+  return function (t) {
+    return i(t);
+  };
+};
 },{}],"../../AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -212,7 +249,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49218" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51513" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

@@ -39,6 +39,10 @@ const yAxis = d3.axisLeft(y)
   .ticks(3)
   .tickFormat(d => d + ' orders');
 
+
+// animation
+const t = d3.transition().duration(3000);
+
 // the update function
 const update = (data) => {
 
@@ -55,36 +59,71 @@ const update = (data) => {
 
   // add attrs to rects already in the DOM
   rects.attr('width', x.bandwidth)
-    .attr("height", d => graphHeight - y(d.orders))
     .attr('fill', 'orange')
-    .attr('x', d => x(d.name))
-    .attr('y', d => y(d.orders));
+    .attr('x', d => x(d.name));
+    //this is apply after merge(rects)
+    // .transition(t)
+    //   .attr("height", d => graphHeight - y(d.orders))
+    //   .attr('y', d => y(d.orders));
 
   // append the enter selection to the DOM
   rects.enter()
     .append('rect')
-      .attr('width', x.bandwidth)
-      .attr("height", d => graphHeight - y(d.orders))
+      .attr('width', 0)
+      .attr('height', 0)
       .attr('fill', 'orange')
       .attr('x', d => x(d.name))
-      .attr('y', d => y(d.orders));
+      .attr('y', graphHeight)
+      .merge(rects)
+      .transition(t)
+        .attrTween('width', widthTween)
+        .attr('y', d => y(d.orders))
+        .attr('height', d => graphHeight - y(d.orders));
 
   xAxisGroup.call(xAxis);
   yAxisGroup.call(yAxis);
 
 };
 
-db.collection('dishes').get().then(({docs}) => {
+let data = [];
 
-  const data = docs.map(doc => doc.data());
+db.collection('dishes').onSnapshot(res => {
+  
+  res.docChanges().forEach(change => {
+
+    const doc = {...change.doc.data(), id: change.doc.id};
+
+    switch (change.type) {
+      case 'added':
+        data.push(doc);
+        break;
+      case 'modified':
+        const index = data.findIndex(item => item.id == doc.id);
+        data[index] = doc;
+        break;
+      case 'removed':
+        data = data.filter(item => item.id !== doc.id);
+        break;
+      default: 
+        break;
+    }
+
+  });
 
   update(data);
 
-  d3.interval(() => {
-    data.pop();
-    // update(data);
-  },3000);
-
-  
-  
 });
+
+
+// TWEENS
+const widthTween = (d) => {
+  console.log(d)
+  //define interpolation
+  //returns finction call i
+  const i = d3.interpolate(0, x.bandwidth());
+
+  return function(t) {
+    return i(t);
+  }
+
+}
